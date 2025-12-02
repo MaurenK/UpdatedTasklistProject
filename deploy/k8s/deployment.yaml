@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasklist
+  labels:
+    app: tasklist
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasklist
+  template:
+    metadata:
+      labels:
+        app: tasklist
+    spec:
+      containers:
+        - name: tasklist
+          image: <your-registry>/tasklist:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"

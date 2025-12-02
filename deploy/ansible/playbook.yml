@@ -1,0 +1,56 @@
+---
+# Simple Ansible playbook to deploy the Spring Boot jar and manage a systemd service
+# Usage: ansible-playbook -i deploy/ansible/inventory.ini deploy/ansible/playbook.yml
+
+- hosts: appservers
+  become: true
+  vars:
+    app_name: tasklist
+    deploy_user: youruser
+    deploy_dir: /opt/{{ app_name }}
+    jar_name: {{ app_name }}-0.0.1-SNAPSHOT.jar
+    local_build_path: ../target/{{ jar_name }}
+
+  tasks:
+    - name: Ensure deploy directory exists
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        mode: '0755'
+
+    - name: Upload jar
+      copy:
+        src: "{{ local_build_path }}"
+        dest: "{{ deploy_dir }}/{{ jar_name }}"
+        owner: "{{ deploy_user }}"
+        mode: '0644'
+
+    - name: Write systemd service
+      copy:
+        dest: /etc/systemd/system/{{ app_name }}.service
+        content: |
+          [Unit]
+          Description={{ app_name }} service
+          After=network.target
+
+          [Service]
+          User={{ deploy_user }}
+          WorkingDirectory={{ deploy_dir }}
+          ExecStart=/usr/bin/java -jar {{ deploy_dir }}/{{ jar_name }}
+          SuccessExitStatus=143
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: reload systemd
+
+    - name: Ensure service is started and enabled
+      systemd:
+        name: "{{ app_name }}"
+        enabled: yes
+        state: restarted
+
+  handlers:
+    - name: reload systemd
+      command: systemctl daemon-reload
