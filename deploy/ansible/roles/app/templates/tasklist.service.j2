@@ -1,0 +1,13 @@
+[Unit]
+Description={{ app_name }} service
+After=network.target
+
+[Service]
+User={{ deploy_user }}
+WorkingDirectory={{ deploy_dir }}
+ExecStart=/usr/bin/java {{ java_opts | default('') }} -jar {{ deploy_dir }}/{{ jar_name }}
+SuccessExitStatus=143
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

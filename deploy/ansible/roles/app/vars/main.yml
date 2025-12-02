@@ -1,0 +1,8 @@
+---
+# Default variables for app role
+app_name: tasklist
+deploy_user: youruser
+deploy_dir: /opt/{{ app_name }}
+jar_name: "{{ app_name }}-0.0.1-SNAPSHOT.jar"
+local_build_path: "../target/{{ jar_name }}"
+java_opts: "-Xms256m -Xmx512m"

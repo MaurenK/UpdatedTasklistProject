@@ -1,0 +1,30 @@
+---
+# Role: app
+# Tasks to deploy the Spring Boot jar and manage the systemd service
+- name: Ensure deploy directory exists
+  file:
+    path: "{{ deploy_dir }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0755'
+
+- name: Upload jar
+  copy:
+    src: "{{ local_build_path }}"
+    dest: "{{ deploy_dir }}/{{ jar_name }}"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Deploy systemd service from template
+  template:
+    src: "tasklist.service.j2"
+    dest: "/etc/systemd/system/{{ app_name }}.service"
+    owner: root
+    mode: '0644'
+  notify: reload systemd
+
+- name: Ensure service is started and enabled
+  systemd:
+    name: "{{ app_name }}"
+    enabled: yes
+    state: restarted

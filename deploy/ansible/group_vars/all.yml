@@ -1,0 +1,5 @@
+---
+# Global group vars
+ansible_user: youruser
+ansible_become: true
+ansible_python_interpreter: /usr/bin/python3
